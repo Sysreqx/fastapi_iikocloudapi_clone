@@ -56,4 +56,19 @@ class Organizations(Base):
     owner_id = Column(Integer, ForeignKey("users.id"))
 
     organization_owner = relationship("Users", back_populates="organizations")
+    # many to one
+    terminal_groups = relationship("TerminalGroups", back_populates="terminal_groups_organization_owner")
+
+
+class TerminalGroups(Base):
+    __tablename__ = "terminal_groups"
+
+    id = Column(Integer, primary_key=True, index=True)
+    name = Column(Boolean)
+    address = Column(Boolean)
+    timezone = Column(Boolean)
+    # one to many
+    organization_id = Column(Integer, ForeignKey("organizations.id"))
+
+    terminal_groups_organization_owner = relationship("Organizations", back_populates="terminal_groups")
 
