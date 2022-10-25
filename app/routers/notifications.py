@@ -1,4 +1,3 @@
-from typing import Optional
 from fastapi import Depends, HTTPException, APIRouter, Query
 from sqlalchemy.orm import Session
 from pydantic import BaseModel, Field
@@ -6,7 +5,7 @@ from enum import Enum
 
 from app import models
 from app.database import engine, SessionLocal
-from app.routers.auth import get_password_hash, get_current_user, get_user_exception, verify_password
+from app.routers.auth import get_current_user, get_user_exception
 
 router = APIRouter(
     prefix="/notifications",
@@ -53,9 +52,9 @@ def get_db():
 
 @router.post("/send",
              summary="Send notification to external systems (iikoFront and iikoWeb).")
-async def create_new_user(notification: Notification,
-                          user: dict = Depends(get_current_user),
-                          db: Session = Depends(get_db)):
+async def send_notification_to_external_system(notification: Notification,
+                                               user: dict = Depends(get_current_user),
+                                               db: Session = Depends(get_db)):
     if user is None:
         raise get_user_exception()
 
@@ -71,12 +70,12 @@ async def create_new_user(notification: Notification,
     db.add(notification_model)
     db.commit()
 
-    notification_model_db = db.query(models.Operations)\
-        .filter(models.Operations.order_source == notification_model.order_source)\
-        .filter(models.Operations.order_id == notification_model.order_id)\
-        .filter(models.Operations.additional_info == notification_model.additional_info)\
-        .filter(models.Operations.organization_id == notification_model.organization_id)\
-        .filter(models.Operations.owner_id == user.get("id"))\
+    notification_model_db = db.query(models.Operations) \
+        .filter(models.Operations.order_source == notification_model.order_source) \
+        .filter(models.Operations.order_id == notification_model.order_id) \
+        .filter(models.Operations.additional_info == notification_model.additional_info) \
+        .filter(models.Operations.organization_id == notification_model.organization_id) \
+        .filter(models.Operations.owner_id == user.get("id")) \
         .first()
 
     if notification_model_db is None:

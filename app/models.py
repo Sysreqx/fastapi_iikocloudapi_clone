@@ -17,7 +17,7 @@ class Users(Base):
 
     todos = relationship("Todos", back_populates="owner")
     operations = relationship("Operations", back_populates="operation_owner")
-
+    organizations = relationship("Organizations", back_populates="organization_owner")
 
 class Todos(Base):
     __tablename__ = "todos"
@@ -32,6 +32,7 @@ class Todos(Base):
     owner = relationship("Users", back_populates="todos")
 
 
+# Notifications
 class Operations(Base):
     __tablename__ = "operations"
 
@@ -44,3 +45,15 @@ class Operations(Base):
     owner_id = Column(Integer, ForeignKey("users.id"))
 
     operation_owner = relationship("Users", back_populates="operations")
+
+
+class Organizations(Base):
+    __tablename__ = "organizations"
+
+    id = Column(Integer, primary_key=True, index=True)
+    name = Column(String)
+    disabled = Column(Boolean)
+    owner_id = Column(Integer, ForeignKey("users.id"))
+
+    organization_owner = relationship("Users", back_populates="organizations")
+

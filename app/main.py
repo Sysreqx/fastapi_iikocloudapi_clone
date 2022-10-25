@@ -3,7 +3,7 @@ from fastapi.openapi.utils import get_openapi
 from app import models
 from app.database import engine
 
-from app.routers import auth, todos, users, notifications
+from app.routers import auth, todos, users, notifications, organizations
 from app.routers.auth import *
 
 description = """
@@ -46,6 +46,7 @@ models.Base.metadata.create_all(bind=engine)
 
 app.include_router(auth.router)
 app.include_router(notifications.router)
+app.include_router(organizations.router)
 app.include_router(todos.router)
 app.include_router(users.router)
 
