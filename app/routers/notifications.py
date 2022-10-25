@@ -32,12 +32,12 @@ class Notification(BaseModel):
     additional_info: str = Field(
         title=" ", description="Additional info about the problem."
     )
-    message_type: str = Field(
-        title=" ", description="Default: order_attentions"
-    )
-    # message_type: MessageType = Query(
-    #     default=..., title=" ", description=" "
+    # message_type: str = Field(
+    #     title=" ", description="Default: order_attentions"
     # )
+    message_type: MessageType = Query(
+        default=..., title=" ", description=" "
+    )
     organization_id: int = Field(
         title=" ", description="Organization UOC Id."
     )
