@@ -11,7 +11,6 @@ from app.routers.auth import get_current_user, get_user_exception
 router = APIRouter(
     prefix="/todos",
     tags=["todos"],
-    responses={404: {"description": "Not found"}}
 )
 
 models.Base.metadata.create_all(bind=engine)

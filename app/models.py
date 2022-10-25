@@ -16,6 +16,7 @@ class Users(Base):
     is_active = Column(Boolean, default=True)
 
     todos = relationship("Todos", back_populates="owner")
+    operations = relationship("Operations", back_populates="operation_owner")
 
 
 class Todos(Base):
@@ -29,3 +30,17 @@ class Todos(Base):
     owner_id = Column(Integer, ForeignKey("users.id"))
 
     owner = relationship("Users", back_populates="todos")
+
+
+class Operations(Base):
+    __tablename__ = "operations"
+
+    id = Column(Integer, primary_key=True, index=True)
+    order_source = Column(String)
+    order_id = Column(Integer)
+    additional_info = Column(String)
+    message_type = Column(String)
+    organization_id = Column(Integer)
+    owner_id = Column(Integer, ForeignKey("users.id"))
+
+    operation_owner = relationship("Users", back_populates="operations")

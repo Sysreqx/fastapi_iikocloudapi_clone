@@ -3,8 +3,10 @@ from typing import Optional
 from passlib.context import CryptContext
 from sqlalchemy.orm import Session
 from fastapi.security import OAuth2PasswordRequestForm, OAuth2PasswordBearer
+from fastapi.responses import JSONResponse
 from datetime import datetime, timedelta
 from jose import jwt, JWTError
+from pydantic import BaseModel, Field
 
 from app import models
 from app.database import SessionLocal, engine
@@ -19,10 +21,18 @@ models.Base.metadata.create_all(bind=engine)
 oauth2_bearer = OAuth2PasswordBearer(tokenUrl="token")
 
 
+class Item(BaseModel):
+    id: str
+    value: str
+
+
+class Message(BaseModel):
+    message: str
+
+
 router = APIRouter(
     prefix="/auth",
-    tags=["auth"],
-    responses={401: {"user": "Not authorized"}}
+    tags=["Authorization"],
 )
 
 
@@ -89,6 +99,8 @@ async def login_for_access_token(form_data: OAuth2PasswordRequestForm = Depends(
     token_expires = timedelta(minutes=30)
 
     token = create_access_token(user.username, user.id, expires_delta=token_expires)
+
+    # return JSONResponse(status_code=404, content={"message": "Item not found"})
 
     return {"token": token}
 
