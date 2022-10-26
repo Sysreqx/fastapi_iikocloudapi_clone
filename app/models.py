@@ -18,6 +18,8 @@ class Users(Base):
     todos = relationship("Todos", back_populates="owner")
     operations = relationship("Operations", back_populates="operation_owner")
     organizations = relationship("Organizations", back_populates="organization_owner")
+    correlations = relationship("Correlations", back_populates="correlation_owner")
+
 
 class Todos(Base):
     __tablename__ = "todos"
@@ -54,6 +56,7 @@ class Organizations(Base):
     name = Column(String)
     disabled = Column(Boolean)
     owner_id = Column(Integer, ForeignKey("users.id"))
+    correlation_children = relationship("Correlations", back_populates="organization_parent")
 
     organization_owner = relationship("Users", back_populates="organizations")
     # many to one
@@ -64,12 +67,41 @@ class TerminalGroups(Base):
     __tablename__ = "terminal_groups"
 
     id = Column(Integer, primary_key=True, index=True)
-    name = Column(Boolean)
-    address = Column(Boolean)
-    timezone = Column(Boolean)
+    name = Column(String)
+    address = Column(String)
+    timezone = Column(String)
     isAlive = Column(Boolean)
     # one to many
     organization_id = Column(Integer, ForeignKey("organizations.id"))
 
     terminal_groups_organization_owner = relationship("Organizations", back_populates="terminal_groups")
 
+
+class Correlations(Base):
+    __tablename__ = "correlations"
+
+    id = Column(Integer, primary_key=True, index=True)
+
+    # children = relationship("Child", back_populates="parent")
+    organization_children = relationship("CancelCauses", back_populates="correlation_parent")
+
+    # parent_id = Column(Integer, ForeignKey("parent_table.id"))
+    # parent = relationship("Parent", back_populates="children")
+    organization_parent_id = Column(Integer, ForeignKey("organizations.id"))
+    organization_parent = relationship("Organizations", back_populates="correlation_children")
+
+    correlation_owner_id = Column(Integer, ForeignKey("users.id"))
+    correlation_owner = relationship("Users", back_populates="correlations")
+
+
+class CancelCauses(Base):
+    __tablename__ = "cancel_causes"
+
+    id = Column(Integer, primary_key=True, index=True)
+    name = Column(String)
+    is_deleted = Column(Boolean)
+
+    # parent_id = Column(Integer, ForeignKey("parent_table.id"))
+    # parent = relationship("Parent", back_populates="children")
+    correlation_id = Column(Integer, ForeignKey("correlations.id"))
+    correlation_parent = relationship("Correlations", back_populates="organization_children")
