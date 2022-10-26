@@ -67,6 +67,7 @@ class TerminalGroups(Base):
     name = Column(Boolean)
     address = Column(Boolean)
     timezone = Column(Boolean)
+    isAlive = Column(Boolean)
     # one to many
     organization_id = Column(Integer, ForeignKey("organizations.id"))
 

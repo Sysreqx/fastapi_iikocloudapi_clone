@@ -27,6 +27,20 @@ class TerminalGroup(BaseModel):
     )
 
 
+class TerminalGroupIsAlive(BaseModel):
+    organization_id: Optional[int] = Field(
+        title=" ", deprecated=True, description="Order ID.",
+    )
+    organization_ids: Optional[list[int]] = Field(
+        title=" ",
+        description="Organization IDs.\n\nCan be obtained by /api/1/organizations operation.",
+    )
+    terminal_group_ids: list[int] = Field(
+        title=" ",
+        description="List of terminal groups IDs.\n\nCan be obtained by /api/1/organizations operation."
+    )
+
+
 def get_db():
     db = SessionLocal()
     try:
@@ -43,10 +57,25 @@ async def get_organizations_by_user(terminal_group: TerminalGroup,
     if user is None:
         raise get_user_exception()
 
-    # organizations = db.query(models.TerminalGroups).filter(models.TerminalGroups.owner_id == user.get("id")).all()
+    return db.query(models.TerminalGroups) \
+        .filter(models.TerminalGroups.organization_id.in_(terminal_group.organization_ids)) \
+        .all()
 
-    return db.query(models.TerminalGroups)\
-        .filter(models.TerminalGroups.organization_id.in_(terminal_group.organization_ids))\
+
+@router.post("/is_alive",
+             summary="Returns information on availability of group of terminals.")
+async def get_organizations_by_user(terminal_group: TerminalGroupIsAlive,
+                                    user: dict = Depends(get_current_user),
+                                    db: Session = Depends(get_db)):
+    if user is None:
+        raise get_user_exception()
+
+    if terminal_group.organization_id not in terminal_group.organization_ids:
+        terminal_group.organization_ids.append(terminal_group.organization_id)
+
+    return db.query(models.TerminalGroups) \
+        .filter(models.TerminalGroups.organization_id.in_(terminal_group.organization_ids)) \
+        .filter(models.TerminalGroups.id.in_(terminal_group.terminal_group_ids)) \
         .all()
 
 
