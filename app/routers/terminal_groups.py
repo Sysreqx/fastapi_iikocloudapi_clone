@@ -1,7 +1,6 @@
-from fastapi import Depends, HTTPException, APIRouter, Query
+from fastapi import Depends, HTTPException, APIRouter
 from sqlalchemy.orm import Session
 from pydantic import BaseModel, Field
-from enum import Enum
 from typing import Optional
 
 from app import models

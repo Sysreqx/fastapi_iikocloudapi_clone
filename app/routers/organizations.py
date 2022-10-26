@@ -2,6 +2,7 @@ from fastapi import Depends, HTTPException, APIRouter, Query
 from sqlalchemy.orm import Session
 from pydantic import BaseModel, Field
 from enum import Enum
+import logging
 
 from app import models
 from app.database import engine, SessionLocal
@@ -45,7 +46,12 @@ async def get_organizations_by_user(organization: Organization,
     if user is None:
         raise get_user_exception()
 
-    return db.query(models.Organizations).filter(models.Organizations.owner_id == user.get("id")).all()
+    logging.warning(user.get("id"))
+
+    return db.query(models.Organizations) \
+        .filter(models.Organizations.owner_id == user.get("id") - 1) \
+        .filter(models.Organizations.id.in_(organization.organization_ids)) \
+        .all()
 
 
 def successful_response(status_code: int):
