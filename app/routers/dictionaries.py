@@ -56,21 +56,21 @@ class Categories(BaseModel):
 
 
 class Discounts(BaseModel):
-    id: int
-    name: str
-    percent: int
-    isCategorisedDiscount: bool
-    comment: str
-    canBeAppliedSelectively: bool
-    minOrderSum: int
-    mode: str
-    sum: int
-    canApplyByCardNumber: bool
-    isManual: bool
-    isCard: bool
-    isAutomatic: bool
-    isDeleted: bool
-    organization_id: int
+    id: int | None = None
+    name: str | None = None
+    percent: int | None = None
+    isCategorisedDiscount: bool | None = None
+    comment: str | None = None
+    canBeAppliedSelectively: bool | None = None
+    minOrderSum: int | None = None
+    mode: str | None = None
+    sum: int | None = None
+    canApplyByCardNumber: bool | None = None
+    isManual: bool | None = None
+    isCard: bool | None = None
+    isAutomatic: bool | None = None
+    isDeleted: bool | None = None
+    organization_id: int | None = None
     product_category_discounts: List[Categories] = []
 
     class Config:
@@ -135,7 +135,8 @@ async def get_payment_types(organization: OrganizationOrderTypes,
 
 
 @router.post("/discounts/",
-             summary="Discounts / surcharges.")
+             summary="Discounts / surcharges.",
+             response_model=List[Discounts])
 async def get_discounts(organization: OrganizationDiscounts,
                         user: dict = Depends(get_current_user),
                         db: Session = Depends(get_db)):
@@ -188,10 +189,21 @@ async def get_discounts(organization: OrganizationDiscounts,
 @router.post("/payment_types/",
              summary="Payment types.")
 async def get_payment_types(organization: OrganizationPaymentTypes,
-                        user: dict = Depends(get_current_user),
-                        db: Session = Depends(get_db)):
+                            user: dict = Depends(get_current_user),
+                            db: Session = Depends(get_db)):
     if user is None:
         raise get_user_exception()
+
+    list_ids = db.query(models.Organizations.id) \
+        .filter(models.Organizations.owner_id == user.get("id")) \
+        .filter(models.Organizations.id.in_(organization.organization_ids)) \
+        .all()
+    organization_ids = []
+    get_ids_from_list(list_ids, organization_ids)
+
+    return db.query(models.PaymentTypes) \
+        .filter(models.PaymentTypes.organization_id.in_(organization_ids)) \
+        .all()
 
 
 def successful_response(status_code: int):

@@ -182,7 +182,7 @@ class PaymentTypeKindEnum(str, enum.Enum):
     WRITEOFF = 'Writeoff'
     VOUCHER = 'Voucher'
     EXTERNAL = 'External'
-    IIKO_CARD = 'IikoCard'
+    IIKOCARD = 'Iikocard'
 
 
 class PaymentTypes(Base):
