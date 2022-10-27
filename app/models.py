@@ -1,4 +1,6 @@
-from sqlalchemy import Boolean, Column, Integer, String, ForeignKey
+import enum
+
+from sqlalchemy import Boolean, Column, Integer, String, ForeignKey, Enum
 from sqlalchemy.orm import relationship
 
 from app.database import Base
@@ -66,6 +68,8 @@ class Organizations(Base):
 
     discounts_owner = relationship("Discounts", back_populates="organization")
 
+    payment_types_owner = relationship("PaymentTypes", back_populates="organization")
+
 
 class TerminalGroups(Base):
     __tablename__ = "terminal_groups"
@@ -79,6 +83,9 @@ class TerminalGroups(Base):
     organization_id = Column(Integer, ForeignKey("organizations.id"))
 
     terminal_groups_organization_owner = relationship("Organizations", back_populates="terminal_groups")
+
+    payment_type_id = Column(Integer, ForeignKey("payment_types.id"))
+    payment_type = relationship("PaymentTypes", back_populates="terminal_groups_owner")
 
 
 class Correlations(Base):
@@ -160,3 +167,50 @@ class Categories(Base):
     discount_id = Column(Integer, ForeignKey("discounts.id"))
     discount = relationship("Discounts", back_populates="categories_owner")
 
+
+class PaymentProcessingTypeEnum(str, enum.Enum):
+    EXTERNAL = 'External'
+    INTERNAL = 'Internal'
+    BOTH = 'Both'
+
+
+class PaymentTypeKindEnum(str, enum.Enum):
+    UNKNOWN = 'Unknown'
+    CASH = 'Cash'
+    CARD = 'Card'
+    CREDIT = 'Credit'
+    WRITEOFF = 'Writeoff'
+    VOUCHER = 'Voucher'
+    EXTERNAL = 'External'
+    IIKO_CARD = 'IikoCard'
+
+
+class PaymentTypes(Base):
+    __tablename__ = "payment_types"
+
+    id = Column(Integer, primary_key=True, index=True)
+    code = Column(String)
+    name = Column(String)
+    comment = Column(String)
+    combinable = Column(Boolean)
+    external_revision = Column(Integer)
+    is_deleted = Column(Boolean)
+    print_cheque = Column(Boolean)
+    payment_processing_type: PaymentProcessingTypeEnum = Column(Enum(PaymentProcessingTypeEnum))
+    payment_type_kind: PaymentTypeKindEnum = Column(Enum(PaymentTypeKindEnum))
+
+    terminal_groups_owner = relationship("TerminalGroups", back_populates="payment_type")
+
+    applicable_marketing_campaigns_owner = relationship("ApplicableMarketingCampaigns", back_populates="payment_type")
+
+    organization_id = Column(Integer, ForeignKey("organizations.id"))
+    organization = relationship("Organizations", back_populates="payment_types_owner")
+
+
+class ApplicableMarketingCampaigns(Base):
+    __tablename__ = "applicable_marketing_campaigns"
+
+    id = Column(Integer, primary_key=True, index=True)
+
+    payment_type_id = Column(Integer, ForeignKey("payment_types.id"))
+    payment_type = relationship("PaymentTypes", back_populates="applicable_marketing_campaigns_owner")

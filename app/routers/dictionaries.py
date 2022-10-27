@@ -38,6 +38,13 @@ class OrganizationDiscounts(BaseModel):
     )
 
 
+class OrganizationPaymentTypes(BaseModel):
+    organization_ids: list[int] = Field(
+        title=" ",
+        description="Organizations IDs which payment types have to be returned.\n\nCan be obtained by /api/1/organizations operation."
+    )
+
+
 class Categories(BaseModel):
     id: int
     name: str
@@ -176,6 +183,15 @@ async def get_discounts(organization: OrganizationDiscounts,
             discounts.append(discount)
 
     return discounts
+
+
+@router.post("/payment_types/",
+             summary="Payment types.")
+async def get_payment_types(organization: OrganizationPaymentTypes,
+                        user: dict = Depends(get_current_user),
+                        db: Session = Depends(get_db)):
+    if user is None:
+        raise get_user_exception()
 
 
 def successful_response(status_code: int):
