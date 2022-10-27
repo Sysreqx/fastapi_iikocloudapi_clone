@@ -79,7 +79,7 @@ class TerminalGroups(Base):
     address = Column(String)
     timezone = Column(String)
     isAlive = Column(Boolean)
-    # one to many
+
     organization_id = Column(Integer, ForeignKey("organizations.id"))
 
     terminal_groups_organization_owner = relationship("Organizations", back_populates="terminal_groups")

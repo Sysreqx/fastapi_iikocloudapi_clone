@@ -1,3 +1,4 @@
+from enum import Enum
 from typing import List
 
 from fastapi import Depends, HTTPException, APIRouter
@@ -75,6 +76,55 @@ class Discounts(BaseModel):
 
     class Config:
         orm_mode = True
+
+
+class ApplicableMarketingCampaigns(BaseModel):
+    id: int | None = None
+    payment_type_id: int | None = None
+
+    class Config:
+        orm_mode = True
+
+
+class TerminalGroups(BaseModel):
+    id: int | None = None
+    name: str | None = None
+    address: str | None = None
+    timezone: str | None = None
+    isAlive: bool | None = None
+    organization_id: int | None = None
+    payment_type_id: int | None = None
+
+
+class PaymentProcessingTypeEnum(str, Enum):
+    external = 'External'
+    internal = 'Internal'
+    both = 'Both'
+
+
+class PaymentTypeKindEnum(str, Enum):
+    unknown = 'Unknown'
+    cash = 'Cash'
+    card = 'Card'
+    credit = 'Credit'
+    writeoff = 'Writeoff'
+    voucher = 'Voucher'
+    external = 'External'
+    iikocard = 'Iikocard'
+
+
+class PaymentTypes(BaseModel):
+    id: int | None = None
+    code: str | None = None
+    name: str | None = None
+    comment: str | None = None
+    combinable: bool | None = None
+    external_revision: int | None = None
+    is_deleted: bool | None = None
+    print_cheque: bool | None = None
+    payment_processing_type: PaymentProcessingTypeEnum = PaymentProcessingTypeEnum.external
+    payment_type_kind: PaymentTypeKindEnum = PaymentTypeKindEnum.cash
+    organization_id: int | None = None
 
 
 def get_db():
