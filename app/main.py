@@ -4,7 +4,7 @@ from app import models
 from app.database import engine
 
 from app.routers import auth, todos, users, notifications, organizations, terminal_groups,\
-    dictionaries
+    dictionaries, orders
 from app.routers.auth import *
 
 description = """
@@ -50,6 +50,7 @@ app.include_router(notifications.router)
 app.include_router(organizations.router)
 app.include_router(terminal_groups.router)
 app.include_router(dictionaries.router)
+app.include_router(orders.router)
 app.include_router(todos.router)
 app.include_router(users.router)
 
