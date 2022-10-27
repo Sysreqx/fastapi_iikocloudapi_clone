@@ -34,7 +34,6 @@ class Todos(Base):
     owner = relationship("Users", back_populates="todos")
 
 
-# Notifications
 class Operations(Base):
     __tablename__ = "operations"
 
@@ -64,6 +63,8 @@ class Organizations(Base):
     terminal_groups = relationship("TerminalGroups", back_populates="terminal_groups_organization_owner")
 
     order_types_children = relationship("OrderTypes", back_populates="organization")
+
+    discounts_owner = relationship("Discounts", back_populates="organization")
 
 
 class TerminalGroups(Base):
@@ -121,3 +122,41 @@ class OrderTypes(Base):
 
     organization_id = Column(Integer, ForeignKey("organizations.id"))
     organization = relationship("Organizations", back_populates="order_types_children")
+
+
+class Discounts(Base):
+    __tablename__ = "discounts"
+
+    id = Column(Integer, primary_key=True, index=True)
+    name = Column(String)
+    percent = Column(Integer)
+    isCategorisedDiscount = Column(Boolean)
+
+    comment = Column(String)
+    canBeAppliedSelectively = Column(Boolean)
+    minOrderSum = Column(Integer)
+    mode = Column(String)
+    sum = Column(Integer)
+    canApplyByCardNumber = Column(Boolean)
+    isManual = Column(Boolean)
+    isCard = Column(Boolean)
+    isAutomatic = Column(Boolean)
+    isDeleted = Column(Boolean)
+
+    # productCategoryDiscounts in iiko
+    categories_owner = relationship("Categories", back_populates="discount")
+
+    organization_id = Column(Integer, ForeignKey("organizations.id"))
+    organization = relationship("Organizations", back_populates="discounts_owner")
+
+
+class Categories(Base):
+    __tablename__ = "categories"
+
+    id = Column(Integer, primary_key=True, index=True)
+    name = Column(String)
+    percent = Column(Integer)
+
+    discount_id = Column(Integer, ForeignKey("discounts.id"))
+    discount = relationship("Discounts", back_populates="categories_owner")
+

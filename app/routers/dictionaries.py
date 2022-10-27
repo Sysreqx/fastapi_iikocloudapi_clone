@@ -1,3 +1,5 @@
+from typing import List
+
 from fastapi import Depends, HTTPException, APIRouter
 from sqlalchemy.orm import Session
 from pydantic import BaseModel, Field
@@ -29,6 +31,45 @@ class OrganizationOrderTypes(BaseModel):
     )
 
 
+class OrganizationDiscounts(BaseModel):
+    organization_ids: list[int] = Field(
+        title=" ",
+        description="Organization IDs that require discounts return.\n\nCan be obtained by /api/1/organizations operation."
+    )
+
+
+class Categories(BaseModel):
+    id: int
+    name: str
+    percent: int
+    discount_id: int
+
+    class Config:
+        orm_mode = True
+
+
+class Discounts(BaseModel):
+    id: int
+    name: str
+    percent: int
+    isCategorisedDiscount: bool
+    comment: str
+    canBeAppliedSelectively: bool
+    minOrderSum: int
+    mode: str
+    sum: int
+    canApplyByCardNumber: bool
+    isManual: bool
+    isCard: bool
+    isAutomatic: bool
+    isDeleted: bool
+    organization_id: int
+    product_category_discounts: List[Categories] = []
+
+    class Config:
+        orm_mode = True
+
+
 def get_db():
     db = SessionLocal()
     try:
@@ -37,7 +78,7 @@ def get_db():
         db.close()
 
 
-@router.post("/cancel_causes",
+@router.post("/cancel_causes/",
              summary="Delivery cancel causes.",
              description="Allowed from version 7.7.1.")
 async def get_delivery_cancel_causes(organization: Organization,
@@ -62,7 +103,7 @@ async def get_delivery_cancel_causes(organization: Organization,
         .all()
 
 
-@router.post("/order_types",
+@router.post("/order_types/",
              summary="Order types.")
 async def get_payment_types(organization: OrganizationOrderTypes,
                             user: dict = Depends(get_current_user),
@@ -70,9 +111,9 @@ async def get_payment_types(organization: OrganizationOrderTypes,
     if user is None:
         raise get_user_exception()
 
-    list_ids = db.query(models.Organizations.id)\
-        .filter(models.Organizations.owner_id == user.get("id"))\
-        .filter(models.Organizations.id.in_(organization.organization_ids))\
+    list_ids = db.query(models.Organizations.id) \
+        .filter(models.Organizations.owner_id == user.get("id")) \
+        .filter(models.Organizations.id.in_(organization.organization_ids)) \
         .all()
 
     logging.warning(list_ids)
@@ -84,6 +125,57 @@ async def get_payment_types(organization: OrganizationOrderTypes,
     return db.query(models.OrderTypes) \
         .filter(models.OrderTypes.organization_id.in_(filtered_ids)) \
         .all()
+
+
+@router.post("/discounts/",
+             summary="Discounts / surcharges.")
+async def get_discounts(organization: OrganizationDiscounts,
+                        user: dict = Depends(get_current_user),
+                        db: Session = Depends(get_db)):
+    if user is None:
+        raise get_user_exception()
+
+    list_ids = db.query(models.Organizations.id) \
+        .filter(models.Organizations.owner_id == user.get("id")) \
+        .filter(models.Organizations.id.in_(organization.organization_ids)) \
+        .all()
+    organization_ids = []
+    get_ids_from_list(list_ids, organization_ids)
+
+    discounts_model = db.query(models.Discounts) \
+        .filter(models.Discounts.organization_id.in_(organization_ids)) \
+        .all()
+
+    discounts = []
+
+    for i in organization_ids:
+
+        for d in discounts_model:
+            discount = Discounts(id=d.id,
+                                 name=d.name,
+                                 percent=d.percent,
+                                 isCategorisedDiscount=d.isCategorisedDiscount,
+                                 comment=d.comment,
+                                 canBeAppliedSelectively=d.canBeAppliedSelectively,
+                                 minOrderSum=d.minOrderSum,
+                                 mode=d.mode,
+                                 sum=d.sum,
+                                 canApplyByCardNumber=d.canApplyByCardNumber,
+                                 isManual=d.isManual,
+                                 isCard=d.isCard,
+                                 isAutomatic=d.isAutomatic,
+                                 isDeleted=d.isDeleted,
+                                 organization_id=d.organization_id)
+
+            categories = db.query(models.Categories) \
+                .filter(models.Categories.discount_id == discount.id) \
+                .all()
+
+            discount.product_category_discounts = categories
+
+            discounts.append(discount)
+
+    return discounts
 
 
 def successful_response(status_code: int):
