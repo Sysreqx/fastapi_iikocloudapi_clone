@@ -55,12 +55,15 @@ class Organizations(Base):
     id = Column(Integer, primary_key=True, index=True)
     name = Column(String)
     disabled = Column(Boolean)
+
     owner_id = Column(Integer, ForeignKey("users.id"))
+    organization_owner = relationship("Users", back_populates="organizations")
+
     correlation_children = relationship("Correlations", back_populates="organization_parent")
 
-    organization_owner = relationship("Users", back_populates="organizations")
-    # many to one
     terminal_groups = relationship("TerminalGroups", back_populates="terminal_groups_organization_owner")
+
+    order_types_children = relationship("OrderTypes", back_populates="organization")
 
 
 class TerminalGroups(Base):
@@ -105,3 +108,16 @@ class CancelCauses(Base):
     # parent = relationship("Parent", back_populates="children")
     correlation_id = Column(Integer, ForeignKey("correlations.id"))
     correlation_parent = relationship("Correlations", back_populates="organization_children")
+
+
+class OrderTypes(Base):
+    __tablename__ = "order_types"
+
+    id = Column(Integer, primary_key=True, index=True)
+    name = Column(String)
+    orderServiceType = Column(String)
+    isDeleted = Column(Boolean)
+    externalRevision = Column(Integer)
+
+    organization_id = Column(Integer, ForeignKey("organizations.id"))
+    organization = relationship("Organizations", back_populates="order_types_children")
