@@ -126,6 +126,13 @@ class PaymentTypes(BaseModel):
     payment_type_kind: PaymentTypeKindEnum = PaymentTypeKindEnum.cash
     organization_id: int | None = None
 
+    applicable_marketing_campaigns: List[ApplicableMarketingCampaigns] = []
+
+    terminal_groups: List[TerminalGroups] = []
+
+    class Config:
+        orm_mode = True
+
 
 def get_db():
     db = SessionLocal()
@@ -251,9 +258,42 @@ async def get_payment_types(organization: OrganizationPaymentTypes,
     organization_ids = []
     get_ids_from_list(list_ids, organization_ids)
 
-    return db.query(models.PaymentTypes) \
+    payment_types_model = db.query(models.PaymentTypes) \
         .filter(models.PaymentTypes.organization_id.in_(organization_ids)) \
         .all()
+
+    payment_types = []
+
+    for i in organization_ids:
+
+        for p in payment_types_model:
+            payment_type = PaymentTypes(id=p.id,
+                                        code=p.code,
+                                        name=p.name,
+                                        comment=p.comment,
+                                        combinable=p.combinable,
+                                        external_revision=p.external_revision,
+                                        is_deleted=p.is_deleted,
+                                        print_cheque=p.print_cheque,
+                                        payment_processing_type=p.payment_processing_type,
+                                        payment_type_kind=p.payment_type_kind,
+                                        organization_id=p.organization_id)
+
+            campaigns = db.query(models.ApplicableMarketingCampaigns) \
+                .filter(models.ApplicableMarketingCampaigns.payment_type_id == payment_type.id) \
+                .all()
+
+            terminal_groups = db.query(models.TerminalGroups) \
+                .filter(models.TerminalGroups.payment_type_id == payment_type.id) \
+                .all()
+
+            payment_type.applicable_marketing_campaigns = campaigns
+
+            payment_type.terminal_groups = terminal_groups
+
+            payment_types.append(payment_type)
+
+    return payment_types
 
 
 def successful_response(status_code: int):
