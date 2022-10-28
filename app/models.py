@@ -216,6 +216,14 @@ class ApplicableMarketingCampaigns(Base):
     payment_type = relationship("PaymentTypes", back_populates="applicable_marketing_campaigns_owner")
 
 
+orders_tables = Table(
+    'orders_tables',
+    Base.metadata,
+    Column('order_id', ForeignKey('orders.id'), primary_key=True),
+    Column('table_id', ForeignKey('tables.id'), primary_key=True)
+)
+
+
 class Orders(Base):
     __tablename__ = "orders"
 
@@ -223,7 +231,7 @@ class Orders(Base):
     external_number = Column(String, nullable=True)
     # SQLite doesn't extend ARRAY. So I use plain int
     # table_ids = Column(ARRAY(String), nullable=True)
-    table_id = Column(Integer, nullable=True)
+    table_id_field = Column(Integer, nullable=True)
     phone = Column(String, nullable=True)
     guest_count = Column(Integer, nullable=True)
     guests = Column(Integer, nullable=True)
@@ -244,6 +252,17 @@ class Orders(Base):
 
     customer_id = Column(Integer, ForeignKey("customers.id"))
     customer = relationship("Customers", back_populates="orders_owner")
+
+    tables_m2m = relationship("Tables", secondary="orders_tables", back_populates='orders_m2m')
+
+
+class Tables(Base):
+    __tablename__ = "tables"
+
+    id = Column(Integer, primary_key=True, index=True)
+
+    orders_m2m = relationship("Orders", secondary="orders_tables", back_populates='tables_m2m')
+
 
 
 class GenderEnum(str, enum.Enum):

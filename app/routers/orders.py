@@ -89,7 +89,7 @@ class Combo(BaseModel):
 
 class Order(BaseModel):
     external_number: str | None = None
-    table_id: int | None = None
+    table_id_field: int | None = None
     customer: Customer | None = Field(
         title=" ",
         description="Guest.\n\n"
@@ -162,6 +162,22 @@ class GetOrderById(BaseModel):
     )
 
 
+class GetOrdersByTable(BaseModel):
+    source_keys: list[int] | None = Field(
+        title=" ",
+        description="Source keys."
+    )
+    organization_ids: list[int] = Field(
+        title=" ",
+        description="Organization IDs.\n\n"
+                    "Can be obtained by /api/1/organizations operation."
+    )
+    table_id_fields: list[int] = Field(
+        title=" ",
+        description="Table IDs.\n\n"
+    )
+
+
 class AddCustomerToOrder(BaseModel):
     organization_id: int = Field(
         title=" ",
@@ -209,7 +225,7 @@ async def create_order(order: CreateOrder,
     order_model = models.Orders()
 
     order_model.external_number = order.order.external_number
-    order_model.table_id = order.order.table_id
+    order_model.table_id_field = order.order.table_id_field
     order_model.phone = order.order.phone
     order_model.guest_count = order.order.guest_count
     order_model.guests = order.order.guests
@@ -248,6 +264,47 @@ async def get_orders_by_ids(order: GetOrderById,
     order_model = db.query(models.Orders) \
         .filter(models.Orders.organization_id.in_(organization_ids)) \
         .filter(models.Orders.id.in_(order.order_ids)) \
+        .all()
+
+    if not order_model:
+        return http_exception()
+
+    return order_model
+
+
+@router.post("/by_table/",
+             summary="Retrieve orders by tables.",
+             description="Allowed from version 7.4.6.")
+async def get_orders_by_table(order: GetOrdersByTable,
+                              user: dict = Depends(get_current_user),
+                              db: Session = Depends(get_db)):
+    if user is None:
+        raise get_user_exception()
+
+    list_ids = db.query(models.Organizations.id) \
+        .filter(models.Organizations.owner_id == user.get("id")) \
+        .filter(models.Organizations.id.in_(order.organization_ids)) \
+        .all()
+    organization_ids = []
+    get_ids_from_list(list_ids, organization_ids)
+
+    logging.warning(organization_ids)
+
+    if not organization_ids:
+        raise HTTPException(status_code=404, detail="Organization not found")
+
+    orders_tables_ids_by_tables = db.query(models.orders_tables)\
+        .all()
+
+    orders_ids_by_tables = []
+
+    for i in orders_tables_ids_by_tables:
+        if i.table_id in order.table_id_fields:
+            orders_ids_by_tables.append(i.order_id)
+
+    order_model = db.query(models.Orders) \
+        .filter(models.Orders.organization_id.in_(organization_ids)) \
+        .filter(models.Orders.id.in_(orders_ids_by_tables)) \
         .all()
 
     if not order_model:
