@@ -140,6 +140,28 @@ class CreateOrder(BaseModel):
     )
 
 
+class GetOrderById(BaseModel):
+    source_keys: list[int] | None = Field(
+        title=" ",
+        description="Source keys."
+    )
+    organization_ids: list[int] = Field(
+        title=" ",
+        description="Organization IDs.\n\n"
+                    "Can be obtained by /api/1/organizations operation."
+    )
+    order_ids: list[int] | None = Field(
+        title=" ",
+        description="Order IDs.\n\n"
+                    "Required if \"orderIds\" is null. Must be null if \"orderIds\" is not null."
+    )
+    pos_order_ids: list[int] | None = Field(
+        title=" ",
+        description="Order IDs.\n\n"
+                    "Required if \"orderIds\" is null. Must be null if \"orderIds\" is not null."
+    )
+
+
 class AddCustomerToOrder(BaseModel):
     organization_id: int = Field(
         title=" ",
@@ -200,6 +222,38 @@ async def create_order(order: CreateOrder,
     db.commit()
 
     return successful_response(201)
+
+
+@router.post("/order_id/",
+             summary="Retrieve orders by IDs.",
+             description="Allowed from version 7.4.6.")
+async def get_orders_by_ids(order: GetOrderById,
+                            user: dict = Depends(get_current_user),
+                            db: Session = Depends(get_db)):
+    if user is None:
+        raise get_user_exception()
+
+    list_ids = db.query(models.Organizations.id) \
+        .filter(models.Organizations.owner_id == user.get("id")) \
+        .filter(models.Organizations.id.in_(order.organization_ids)) \
+        .all()
+    organization_ids = []
+    get_ids_from_list(list_ids, organization_ids)
+
+    logging.warning(organization_ids)
+
+    if not organization_ids:
+        raise HTTPException(status_code=404, detail="Organization not found")
+
+    order_model = db.query(models.Orders) \
+        .filter(models.Orders.organization_id.in_(organization_ids)) \
+        .filter(models.Orders.id.in_(order.order_ids)) \
+        .all()
+
+    if not order_model:
+        return http_exception()
+
+    return order_model
 
 
 @router.post("/add_customer/",
