@@ -1,3 +1,4 @@
+import logging
 from enum import Enum
 from typing import Optional, List
 
@@ -151,11 +152,36 @@ def get_db():
              summary="Create order.",
              description="Allowed from version 7.4.6.\n\n"
                          "This method is a command. Use api/1/commands/status method to get the progress status.")
-async def create_todo(order: CreateOrder,
-                      user: dict = Depends(get_current_user),
-                      db: Session = Depends(get_db)):
+async def create_order(order: CreateOrder,
+                       user: dict = Depends(get_current_user),
+                       db: Session = Depends(get_db)):
     if user is None:
         raise get_user_exception()
+
+    list_ids = db.query(models.Organizations.id) \
+        .filter(models.Organizations.owner_id == user.get("id")) \
+        .filter(models.Organizations.id.in_([order.organization_id])) \
+        .all()
+    organization_ids = []
+    get_ids_from_list(list_ids, organization_ids)
+
+    if order.organization_id not in organization_ids:
+        raise HTTPException(status_code=404, detail="Organization not found")
+
+    order_model = models.Orders()
+
+    order_model.external_number = order.order.external_number
+    order_model.table_id = order.order.table_id
+    order_model.phone = order.order.phone
+    order_model.guest_count = order.order.guest_count
+    order_model.guests = order.order.guests
+    order_model.tab_name = order.order.tab_name
+    order_model.source_key = order.order.source_key
+    order_model.order_type_id = order.order.order_type_id
+    order_model.organization_id = order.organization_id
+
+    db.add(order_model)
+    db.commit()
 
     return successful_response(201)
 
@@ -169,3 +195,12 @@ def successful_response(status_code: int):
 
 def http_exception():
     return HTTPException(status_code=404, detail="Todo not found")
+
+
+def get_ids_from_list(a_list, needed_list):
+    for i in a_list:
+        emp_str = ""
+        for m in str(i):
+            if m.isdigit():
+                emp_str = emp_str + m
+        needed_list.append(int(emp_str))

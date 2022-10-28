@@ -240,7 +240,7 @@ class Orders(Base):
     payments_owner = relationship("Payments", back_populates="order")
 
     organization_id = Column(Integer, ForeignKey("organizations.id"))
-    organization = relationship("Parent", back_populates="orders_owner")
+    organization = relationship("Organizations", back_populates="orders_owner")
 
 
 class GenderEnum(str, enum.Enum):
