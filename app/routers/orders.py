@@ -1,6 +1,6 @@
 import logging
 from enum import Enum
-from typing import Optional, List
+from typing import List
 
 from fastapi import Depends, HTTPException, APIRouter
 from sqlalchemy.orm import Session
@@ -140,6 +140,22 @@ class CreateOrder(BaseModel):
     )
 
 
+class AddCustomerToOrder(BaseModel):
+    organization_id: int = Field(
+        title=" ",
+        description="Organization ID.\n\n"
+                    "Can be obtained by /api/1/organizations operation."
+    )
+    order_id: int = Field(
+        title=" ",
+        description="Order ID."
+    )
+    customer: Customer = Field(
+        title=" ",
+        description="Guest info."
+    )
+
+
 def get_db():
     db = SessionLocal()
     try:
@@ -186,6 +202,63 @@ async def create_order(order: CreateOrder,
     return successful_response(201)
 
 
+@router.post("/add_customer/",
+             summary="Add customer to order.",
+             description="Allowed from version 7.7.1.\n\n"
+                         "This method is a command. Use api/1/commands/status method to get the progress status.")
+async def add_customer(order: AddCustomerToOrder,
+                       user: dict = Depends(get_current_user),
+                       db: Session = Depends(get_db)):
+    if user is None:
+        raise get_user_exception()
+
+    list_ids = db.query(models.Organizations.id) \
+        .filter(models.Organizations.owner_id == user.get("id")) \
+        .filter(models.Organizations.id.in_([order.organization_id])) \
+        .all()
+    organization_ids = []
+    get_ids_from_list(list_ids, organization_ids)
+
+    if order.organization_id not in organization_ids:
+        raise HTTPException(status_code=404, detail="Organization not found")
+
+    order_model = db.query(models.Orders) \
+        .filter(models.Orders.id == order.order_id) \
+        .first()
+
+    if order_model is None:
+        return http_exception()
+
+    customer_model = db.query(models.Customers) \
+        .filter(models.Customers.email == order.customer.email) \
+        .first()
+
+    if customer_model is None:
+        customer_model = models.Customers()
+
+        customer_model.name = order.customer.name
+        customer_model.surname = order.customer.surname
+        customer_model.comment = order.customer.comment
+        customer_model.birthdate = order.customer.birthdate
+        customer_model.email = order.customer.email
+        customer_model.should_receive_order_status_notifications = order.customer.should_receive_order_status_notifications
+        customer_model.gender = order.customer.gender
+        customer_model.type = order.customer.type
+
+        db.add(customer_model)
+        db.commit()
+
+        customer_model = db.query(models.Customers) \
+            .filter(models.Customers.email == order.customer.email) \
+            .first()
+
+    order_model.customer_id = customer_model.id
+    db.add(order_model)
+    db.commit()
+
+    return successful_response(201)
+
+
 def successful_response(status_code: int):
     return {
         "status": status_code,
@@ -194,7 +267,7 @@ def successful_response(status_code: int):
 
 
 def http_exception():
-    return HTTPException(status_code=404, detail="Todo not found")
+    return HTTPException(status_code=404, detail="Order not found")
 
 
 def get_ids_from_list(a_list, needed_list):

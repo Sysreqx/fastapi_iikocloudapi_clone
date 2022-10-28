@@ -49,7 +49,7 @@ async def get_organizations_by_user(organization: Organization,
     # logging.warning(user.get("id"))
 
     return db.query(models.Organizations) \
-        .filter(models.Organizations.owner_id == user.get("id") - 1) \
+        .filter(models.Organizations.owner_id == user.get("id")) \
         .filter(models.Organizations.id.in_(organization.organization_ids)) \
         .all()
 

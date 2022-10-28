@@ -231,7 +231,7 @@ class Orders(Base):
     source_key = Column(String, nullable=True)
     order_type_id = Column(String, nullable=True)
 
-    # o2o_order_id one-to-one relationship Customers(Base)
+    # o2o_order_id one-to-one relationship Customers(Base) don't need
 
     items_owner = relationship("Items", back_populates="order")
 
@@ -241,6 +241,9 @@ class Orders(Base):
 
     organization_id = Column(Integer, ForeignKey("organizations.id"))
     organization = relationship("Organizations", back_populates="orders_owner")
+
+    customer_id = Column(Integer, ForeignKey("customers.id"))
+    customer = relationship("Customers", back_populates="orders_owner")
 
 
 class GenderEnum(str, enum.Enum):
@@ -267,8 +270,10 @@ class Customers(Base):
     gender: GenderEnum = Column(Enum(GenderEnum), nullable=True)
     type: TypeEnum = Column(Enum(TypeEnum), nullable=True)
 
-    o2o_order_id = Column(Integer, ForeignKey("orders.id"))
-    o2o_order = relationship("Orders", backref=backref("o2o_customer", uselist=False))
+    orders_owner = relationship("Orders", back_populates="customer")
+
+    # o2o_order_id = Column(Integer, ForeignKey("orders.id"))
+    # o2o_order = relationship("Orders", backref=backref("o2o_customer", uselist=False))
 
 
 class ItemTypeEnum(str, enum.Enum):
