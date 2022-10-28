@@ -1,7 +1,7 @@
 import enum
 
-from sqlalchemy import Boolean, Column, Integer, String, ForeignKey, Enum
-from sqlalchemy.orm import relationship
+from sqlalchemy import Boolean, Column, Integer, String, ForeignKey, Enum, ARRAY, Date, Table
+from sqlalchemy.orm import relationship, backref
 
 from app.database import Base
 
@@ -70,6 +70,8 @@ class Organizations(Base):
 
     payment_types_owner = relationship("PaymentTypes", back_populates="organization")
 
+    orders_owner = relationship("Orders", back_populates="organization")
+
 
 class TerminalGroups(Base):
     __tablename__ = "terminal_groups"
@@ -93,11 +95,8 @@ class Correlations(Base):
 
     id = Column(Integer, primary_key=True, index=True)
 
-    # children = relationship("Child", back_populates="parent")
     organization_children = relationship("CancelCauses", back_populates="correlation_parent")
 
-    # parent_id = Column(Integer, ForeignKey("parent_table.id"))
-    # parent = relationship("Parent", back_populates="children")
     organization_parent_id = Column(Integer, ForeignKey("organizations.id"))
     organization_parent = relationship("Organizations", back_populates="correlation_children")
 
@@ -112,8 +111,6 @@ class CancelCauses(Base):
     name = Column(String)
     is_deleted = Column(Boolean)
 
-    # parent_id = Column(Integer, ForeignKey("parent_table.id"))
-    # parent = relationship("Parent", back_populates="children")
     correlation_id = Column(Integer, ForeignKey("correlations.id"))
     correlation_parent = relationship("Correlations", back_populates="organization_children")
 
@@ -206,6 +203,9 @@ class PaymentTypes(Base):
     organization_id = Column(Integer, ForeignKey("organizations.id"))
     organization = relationship("Organizations", back_populates="payment_types_owner")
 
+    payment_id = Column(Integer, ForeignKey("payments.id"))
+    payment = relationship("Payments", back_populates="payment_types_owner")
+
 
 class ApplicableMarketingCampaigns(Base):
     __tablename__ = "applicable_marketing_campaigns"
@@ -214,3 +214,119 @@ class ApplicableMarketingCampaigns(Base):
 
     payment_type_id = Column(Integer, ForeignKey("payment_types.id"))
     payment_type = relationship("PaymentTypes", back_populates="applicable_marketing_campaigns_owner")
+
+
+class Orders(Base):
+    __tablename__ = "orders"
+
+    id = Column(Integer, primary_key=True, index=True)
+    external_number = Column(String, nullable=True)
+    # SQLite doesn't extend ARRAY. So I use plain int
+    # table_ids = Column(ARRAY(String), nullable=True)
+    table_id = Column(Integer, nullable=True)
+    phone = Column(String, nullable=True)
+    guest_count = Column(Integer, nullable=True)
+    guests = Column(Integer, nullable=True)
+    tab_name = Column(Integer, nullable=True)
+    source_key = Column(String, nullable=True)
+    order_type_id = Column(String, nullable=True)
+
+    # o2o_order_id one-to-one relationship Customers(Base)
+
+    items_owner = relationship("Items", back_populates="order")
+
+    combos_owner = relationship("Combos", back_populates="order")
+
+    payments_owner = relationship("Payments", back_populates="order")
+
+    organization_id = Column(Integer, ForeignKey("organizations.id"))
+    organization = relationship("Parent", back_populates="orders_owner")
+
+
+class GenderEnum(str, enum.Enum):
+    NOTSPECIFIED = 'NotSpecified'
+    MALE = 'Male'
+    FEMALE = 'Female'
+
+
+class TypeEnum(str, enum.Enum):
+    REGULAR = 'Regular'
+    ONETIME = 'OneTime'
+
+
+class Customers(Base):
+    __tablename__ = "customers"
+
+    id = Column(Integer, primary_key=True, index=True)
+    name = Column(String, nullable=True)
+    surname = Column(String, nullable=True)
+    comment = Column(String, nullable=True)
+    birthdate = Column(Date, nullable=True)
+    email = Column(String, nullable=True)
+    should_receive_order_status_notifications = Column(Boolean, nullable=True)
+    gender: GenderEnum = Column(Enum(GenderEnum), nullable=True)
+    type: TypeEnum = Column(Enum(TypeEnum), nullable=True)
+
+    o2o_order_id = Column(Integer, ForeignKey("orders.id"))
+    o2o_order = relationship("Orders", backref=backref("o2o_customer", uselist=False))
+
+
+class ItemTypeEnum(str, enum.Enum):
+    PRODUCT = 'Product'
+    COMPOUND = 'Compound'
+
+
+items_combos = Table(
+    'items_combos',
+    Base.metadata,
+    Column('item_id', ForeignKey('items.id'), primary_key=True),
+    Column('combo_id', ForeignKey('combos.id'), primary_key=True)
+)
+
+
+class Items(Base):
+    __tablename__ = "items"
+
+    id = Column(Integer, primary_key=True, index=True)
+    price = Column(Integer, nullable=True)
+    positionId = Column(Integer, nullable=True)
+    type: TypeEnum = Column(Enum(TypeEnum))
+    amount = Column(Integer)
+    productSizeId = Column(Integer, nullable=True)
+    comment = Column(String, nullable=True)
+
+    combos_m2m = relationship("Combos", secondary="items_combos", back_populates='items_m2m')
+
+    order_id = Column(Integer, ForeignKey("orders.id"))
+    order = relationship("Orders", back_populates="items_owner")
+
+
+class Combos(Base):
+    __tablename__ = "combos"
+
+    id = Column(Integer, primary_key=True, index=True)
+    name = Column(String)
+    amount = Column(Integer)
+    price = Column(Integer)
+    sourceId = Column(Integer)
+    programId = Column(Integer, nullable=True)
+
+    items_m2m = relationship("Items", secondary="items_combos", back_populates='combos_m2m')
+
+    order_id = Column(Integer, ForeignKey("orders.id"))
+    order = relationship("Orders", back_populates="combos_owner")
+
+
+class Payments(Base):
+    __tablename__ = "payments"
+
+    id = Column(Integer, primary_key=True, index=True)
+    sum = Column(Integer)
+    is_processed_externally = Column(Boolean, nullable=True)
+    # paymentAdditionalData object
+    is_fiscalized_externally = Column(Boolean, nullable=True)
+
+    payment_types_owner = relationship("PaymentTypes", back_populates="payment")
+
+    order_id = Column(Integer, ForeignKey("orders.id"))
+    order = relationship("Orders", back_populates="payments_owner")
