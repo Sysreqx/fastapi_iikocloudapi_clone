@@ -1,7 +1,9 @@
+from enum import Enum
 from typing import Optional
 
 from fastapi import Depends, HTTPException, APIRouter
 from sqlalchemy.orm import Session
+from datetime import date
 from pydantic import BaseModel, Field
 
 from app import models
@@ -16,12 +18,49 @@ router = APIRouter(
 models.Base.metadata.create_all(bind=engine)
 
 
+class GenderEnum(str, Enum):
+    notspecified = 'NotSpecified'
+    male = 'Male'
+    female = 'Female'
+
+
+class TypeEnum(str, Enum):
+    regular = 'Regular'
+    onetime = 'OneTime'
+
+
+class Customer(BaseModel):
+    name: str | None = None
+    surname: str | None = None
+    comment: str | None = None
+    birthdate: date | None = None
+    email: str | None = None
+    should_receive_order_status_notifications: bool | None = None
+    gender: GenderEnum = GenderEnum.notspecified
+    type: TypeEnum = TypeEnum.onetime
+
+
 class Order(BaseModel):
-    id: int
-    table_ids: list[int] = Field(
-        title="Nullable",
-        description="Table IDs."
+    external_number: str | None = None
+    table_id: int | None = None
+    customer: Customer | None = Field(
+        title=" ",
+        description="Guest.\n\n"
+                    "Allowed from version 7.5.2."
     )
+    phone: str | None = None
+    guest_count: int | None = None
+    guests: int | None = None
+    # items array
+    # combos array
+    # payments array
+    tab_name: int | None = None
+    source_key: str | None = None
+    order_type_id: str | None = None
+
+
+class OrderSettings(BaseModel):
+    transport_to_front_timeout: int | None = None
 
 
 class CreateOrder(BaseModel):
@@ -38,6 +77,10 @@ class CreateOrder(BaseModel):
     order: Order = Field(
         title=" ",
         description="Order."
+    )
+    create_order_settings: OrderSettings | None = Field(
+        title=" ",
+        description="Order creation parameters."
     )
 
 
