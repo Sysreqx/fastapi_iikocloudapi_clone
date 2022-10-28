@@ -317,11 +317,20 @@ class Combos(Base):
     order = relationship("Orders", back_populates="combos_owner")
 
 
+class PaymentsTypeKindEnum(str, enum.Enum):
+    CASH = 'Cash'
+    CARD = 'Card'
+    IIKOCARD = 'Iikocard'
+    EXTERNAL = 'External'
+
+
 class Payments(Base):
     __tablename__ = "payments"
 
     id = Column(Integer, primary_key=True, index=True)
+    payment_type_kind: PaymentsTypeKindEnum = Column(Enum(PaymentsTypeKindEnum))
     sum = Column(Integer)
+    payment_type_id = Column(Integer)
     is_processed_externally = Column(Boolean, nullable=True)
     # paymentAdditionalData object
     is_fiscalized_externally = Column(Boolean, nullable=True)
