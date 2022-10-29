@@ -194,6 +194,26 @@ class AddCustomerToOrder(BaseModel):
     )
 
 
+class AddItemsToOrder(BaseModel):
+    organization_id: int = Field(
+        title=" ",
+        description="Organization ID.\n\n"
+                    "Can be obtained by /api/1/organizations operation."
+    )
+    order_id: int = Field(
+        title=" ",
+        description="Order ID."
+    )
+    items: List[Item] = Field(
+        title=" ",
+        description="Order items."
+    )
+    combos: List[Combo] | None = Field(
+        title=" ",
+        description="Combos included in order."
+    )
+
+
 def get_db():
     db = SessionLocal()
     try:
@@ -293,7 +313,7 @@ async def get_orders_by_table(order: GetOrdersByTable,
     if not organization_ids:
         raise HTTPException(status_code=404, detail="Organization not found")
 
-    orders_tables_ids_by_tables = db.query(models.orders_tables)\
+    orders_tables_ids_by_tables = db.query(models.orders_tables) \
         .all()
 
     orders_ids_by_tables = []
@@ -311,6 +331,50 @@ async def get_orders_by_table(order: GetOrdersByTable,
         return http_exception()
 
     return order_model
+
+
+@router.post("/add_items/",
+             summary="Add order items.",
+             description="Allowed from version 7.4.6.\n\n"
+                         "This method is a command. Use api/1/commands/status method to get the progress status.")
+async def add_items_to_order(order: AddItemsToOrder,
+                             user: dict = Depends(get_current_user),
+                             db: Session = Depends(get_db)):
+    if user is None:
+        raise get_user_exception()
+
+    list_ids = db.query(models.Organizations.id) \
+        .filter(models.Organizations.owner_id == user.get("id")) \
+        .filter(models.Organizations.id.in_([order.organization_id])) \
+        .all()
+    organization_ids = []
+    get_ids_from_list(list_ids, organization_ids)
+
+    if order.organization_id not in organization_ids:
+        raise HTTPException(status_code=404, detail="Organization not found")
+
+    order_model = db.query(models.Orders) \
+        .filter(models.Orders.id == order.order_id) \
+        .first()
+
+    if order_model is None:
+        return http_exception()
+
+    for i in order.items:
+        items_model = models.Items()
+
+        items_model.price = i.price
+        items_model.positionId = i.positionId
+        items_model.type = i.type
+        items_model.amount = i.amount
+        items_model.productSizeId = i.productSizeId
+        items_model.comment = i.comment
+        items_model.order_id = order.order_id
+
+        db.add(items_model)
+        db.commit()
+
+    return successful_response(201)
 
 
 @router.post("/add_customer/",
