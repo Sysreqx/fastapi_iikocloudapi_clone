@@ -74,8 +74,8 @@ class Payment(BaseModel):
     payment_type_kind: PaymentsTypeKindEnum = PaymentsTypeKindEnum.CASH
     sum: int
     payment_type_id: int
-    is_processed_externally: bool | None = None
-    is_fiscalized_externally: bool | None = None
+    is_processed_externally: bool | None = Field(default=False)
+    is_fiscalized_externally: bool | None = Field(default=False)
 
 
 class Combo(BaseModel):
@@ -246,6 +246,22 @@ class CloseOrder(BaseModel):
     order_id: int = Field(
         title=" ",
         description="Order ID."
+    )
+
+
+class ChangePayments(BaseModel):
+    organization_id: int = Field(
+        title=" ",
+        description="Organization ID.\n\n"
+                    "Can be obtained by /api/1/organizations operation."
+    )
+    order_id: int = Field(
+        title=" ",
+        description="Order ID."
+    )
+    payments: List[Payment] = Field(
+        title=" ",
+        description="Order payments."
     )
 
 
@@ -443,6 +459,64 @@ async def close_order(order: CloseOrder,
     order_model.is_closed = True
     db.add(order_model)
     db.commit()
+
+    return successful_response(201)
+
+
+@router.post("/change_payments/",
+             summary="Change table order's payments.",
+             description="Method will fail if there are any processed payments in the order. If all payments in the "
+                         "order are unprocessed they will be removed and replaced with new ones.\n\n "
+                         "Allowed from version 7.7.4.")
+async def change_payments(order: ChangePayments,
+                          user: dict = Depends(get_current_user),
+                          db: Session = Depends(get_db)):
+    if user is None:
+        raise get_user_exception()
+
+    list_ids = db.query(models.Organizations.id) \
+        .filter(models.Organizations.owner_id == user.get("id")) \
+        .filter(models.Organizations.id.in_([order.organization_id])) \
+        .all()
+    organization_ids = []
+    get_ids_from_list(list_ids, organization_ids)
+
+    if order.organization_id not in organization_ids:
+        raise HTTPException(status_code=404, detail="Organization not found")
+
+    order_model = db.query(models.Orders) \
+        .filter(models.Orders.id == order.order_id) \
+        .filter(models.Orders.organization_id == order.organization_id) \
+        .first()
+
+    if order_model is None:
+        return http_exception()
+
+    payments_model = db.query(models.Payments) \
+        .filter(models.Payments.order_id == order_model.id) \
+        .all()
+
+    for p in payments_model:
+        if p.is_fiscalized_externally is True or p.is_processed_externally is True:
+            raise HTTPException(status_code=409, detail="Payments already fiscalized or processed")
+
+    db.query(models.Payments) \
+        .filter(models.Payments.order_id == order_model.id) \
+        .delete()
+    db.commit()
+
+    for p in order.payments:
+        payment_model = models.Payments()
+
+        payment_model.payment_type_kind = p.payment_type_kind
+        payment_model.sum = p.sum
+        payment_model.payment_type_id = p.payment_type_id
+        payment_model.is_processed_externally = p.is_processed_externally
+        payment_model.is_fiscalized_externally = p.is_fiscalized_externally
+        payment_model.order_id = order.order_id
+
+        db.add(payment_model)
+        db.commit()
 
     return successful_response(201)
 
