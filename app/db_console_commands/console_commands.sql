@@ -17,13 +17,13 @@ values ('Organization #4', false, 2);
 
 
 insert into operations (order_source, order_id, additional_info, message_type, organization_id, owner_id)
-values ('Order source #1', '111 ', 'Additional info about the problem #1', 'order_attentions', 2, 1);
+values ('Order source #1', '111', 'Additional info about the problem #1', 'order_attentions', 2, 1);
 
 insert into operations (order_source, order_id, additional_info, message_type, organization_id, owner_id)
-values ('Order source #2', '222 ', 'Additional info about the problem #2', 'order_attentions', 2, 1);
+values ('Order source #2', '222', 'Additional info about the problem #2', 'order_attentions', 2, 1);
 
 insert into operations (order_source, order_id, additional_info, message_type, organization_id, owner_id)
-values ('Order source #3', '333 ', 'Additional info about the problem #3', 'order_attentions', 2, 1);
+values ('Order source #3', '333', 'Additional info about the problem #3', 'order_attentions', 2, 1);
 
 
 insert into terminal_groups (name, address, timezone, isAlive, organization_id, payment_type_id)
@@ -116,17 +116,17 @@ values ('category #7', 5, 3);
 
 
 insert into discounts (name, percent, isCategorisedDiscount, comment, canBeAppliedSelectively, minOrderSum, mode,
-                       'sum', canApplyByCardNumber, isManual, isCard, isAutomatic, isDeleted, organization_id)
+                       "sum", canApplyByCardNumber, isManual, isCard, isAutomatic, isDeleted, organization_id)
 values ('discount #1', 0, true, 'discount comment #1', true, 0, 'discount mode #1',
         0, true, true, true, true, true, 1);
 
 insert into discounts (name, percent, isCategorisedDiscount, comment, canBeAppliedSelectively, minOrderSum, mode,
-                       'sum', canApplyByCardNumber, isManual, isCard, isAutomatic, isDeleted, organization_id)
+                       "sum", canApplyByCardNumber, isManual, isCard, isAutomatic, isDeleted, organization_id)
 values ('discount #2', 0, true, 'discount comment #2', true, 0, 'discount mode #2',
         0, true, true, true, true, true, 1);
 
 insert into discounts (name, percent, isCategorisedDiscount, comment, canBeAppliedSelectively, minOrderSum, mode,
-                       'sum', canApplyByCardNumber, isManual, isCard, isAutomatic, isDeleted, organization_id)
+                       "sum", canApplyByCardNumber, isManual, isCard, isAutomatic, isDeleted, organization_id)
 values ('discount #3', 0, true, 'discount comment #3', true, 0, 'discount mode #3',
         0, true, true, true, true, true, 2);
 
@@ -144,30 +144,20 @@ insert into applicable_marketing_campaigns (payment_type_id)
 values (1);
 
 
-insert into payment_types (code, name, comment, combinable, external_revision, is_deleted, print_cheque,
-                           payment_processing_type, payment_type_kind, organization_id, payment_id)
-values ('payment type code #1', 'payment type name #1', 'payment type comment #1', true, 0, true, true,
-        'EXTERNAL', 'UNKNOWN', 1, 1);
+insert into payment_types (code, name, comment, combinable, external_revision, is_deleted, print_cheque, payment_processing_type, payment_type_kind, organization_id, payment_id)
+values ('payment type code #1', 'payment type name #1', 'payment type comment #1', true, 0, true, true, 'EXTERNAL', 'UNKNOWN', 1, 1);
 
-insert into payment_types (code, name, comment, combinable, external_revision, is_deleted, print_cheque,
-                           payment_processing_type, payment_type_kind, organization_id, payment_id)
-values ('payment type code #2', 'payment type name #2', 'payment type comment #2', true, 0, true, true,
-        'INTERNAL', 'CARD', 1, 1);
+insert into payment_types (code, name, comment, combinable, external_revision, is_deleted, print_cheque, payment_processing_type, payment_type_kind, organization_id, payment_id)
+values ('payment type code #2', 'payment type name #2', 'payment type comment #2', true, 0, true, true, 'INTERNAL', 'CARD', 1, 1);
 
-insert into payment_types (code, name, comment, combinable, external_revision, is_deleted, print_cheque,
-                           payment_processing_type, payment_type_kind, organization_id, payment_id)
-values ('payment type code #3', 'payment type name #3', 'payment type comment #3', true, 0, true, true, 'BOTH',
-        'CASH', 3, 3);
+insert into payment_types (code, name, comment, combinable, external_revision, is_deleted, print_cheque, payment_processing_type, payment_type_kind, organization_id, payment_id)
+values ('payment type code #3', 'payment type name #3', 'payment type comment #3', true, 0, true, true, 'BOTH', 'CASH', 3, 3);
 
-insert into payment_types (code, name, comment, combinable, external_revision, is_deleted, print_cheque,
-                           payment_processing_type, payment_type_kind, organization_id, payment_id)
-values ('payment type code #4', 'payment type name #4', 'payment type comment #4', true, 0, true, true,
-        'INTERNAL', 'CREDIT', 2, 4);
+insert into payment_types (code, name, comment, combinable, external_revision, is_deleted, print_cheque, payment_processing_type, payment_type_kind, organization_id, payment_id)
+values ('payment type code #4', 'payment type name #4', 'payment type comment #4', true, 0, true, true, 'INTERNAL', 'CREDIT', 2, 4);
 
-insert into payment_types (code, name, comment, combinable, external_revision, is_deleted, print_cheque,
-                           payment_processing_type, payment_type_kind, organization_id, payment_id)
-values ('payment type code #5', 'payment type name #5', 'payment type comment #5', true, 0, true, true, 'BOTH',
-        'IIKOCARD', 4, 2);
+insert into payment_types (code, name, comment, combinable, external_revision, is_deleted, print_cheque, payment_processing_type, payment_type_kind, organization_id, payment_id)
+values ('payment type code #5', 'payment type name #5', 'payment type comment #5', true, 0, true, true, 'BOTH', 'IIKOCARD', 4, 2);
 
 
 insert into items (price, positionId, type, amount, productSizeId, comment, order_id)
@@ -217,80 +207,129 @@ insert into combos (name, amount, price, sourceId, programId, order_id)
 values ('combo #5', 3, 22, 31, 49, 1);
 
 
-insert into customers (name, surname, comment, birthdate, email, should_receive_order_status_notifications, gender,
-                       type, o2o_order_id)
-values ('customer name #1', 'customer surname #1', 'customer comment #1', '1990 - 12 - 17 ',
-        'customer email #1', true, 'MALE', 'ONETIME', 1);
+insert into customers (name, surname, comment, birthdate, email, should_receive_order_status_notifications, gender, type)
+values ('customer name #1', 'customer surname #1', 'customer comment #1', '1990-12-17', 'customer email #1', true, 'MALE', 'ONETIME');
 
-insert into customers (name, surname, comment, birthdate, email, should_receive_order_status_notifications, gender,
-                       type, o2o_order_id)
-values ('customer name #2', 'customer surname #2', 'customer comment #2', '1995 - 03 - 15 ',
-        'customer email #2', true, 'FEMALE', 'REGULAR', 2);
+insert into customers (name, surname, comment, birthdate, email, should_receive_order_status_notifications, gender, type)
+values ('customer name #2', 'customer surname #2', 'customer comment #2', '1995-03-15', 'customer email #2', true, 'FEMALE', 'REGULAR');
 
-insert into customers (name, surname, comment, birthdate, email, should_receive_order_status_notifications, gender,
-                       type, o2o_order_id)
-values ('customer name #3', 'customer surname #3', 'customer comment #3', '1989 - 05 - 04 ',
-        'customer email #3', true, 'NOTSPECIFIED', 'ONETIME', 3);
+insert into customers (name, surname, comment, birthdate, email, should_receive_order_status_notifications, gender, type)
+values ('customer name #3', 'customer surname #3', 'customer comment #3', '1989-05-04', 'customer email #3', true, 'NOTSPECIFIED', 'ONETIME');
 
-insert into customers (name, surname, comment, birthdate, email, should_receive_order_status_notifications, gender,
-                       type, o2o_order_id)
-values ('customer name #4', 'customer surname #4', 'customer comment #4', '1997 - 08 - 15 ',
-        'customer email #4', true, 'MALE', 'ONETIME', 4);
+insert into customers (name, surname, comment, birthdate, email, should_receive_order_status_notifications, gender, type)
+values ('customer name #4', 'customer surname #4', 'customer comment #4', '1997-08-15', 'customer email #4', true, 'MALE', 'ONETIME');
 
 
-insert into payments (payment_type_kind, 'sum', payment_type_id, is_processed_externally, is_fiscalized_externally,
-                      order_id)
-values ('CASH', 3000, 1, true, true, 1);
+insert into payments (payment_type_kind, "sum", payment_type_id, is_processed_externally, is_fiscalized_externally, order_id)
+values ('CASH', 3000, 1 , false, false, 1);
 
-insert into payments (payment_type_kind, 'sum', payment_type_id, is_processed_externally, is_fiscalized_externally,
-                      order_id)
-values ('CASH', 2000, 1, true, true, 2);
+insert into payments (payment_type_kind, "sum", payment_type_id, is_processed_externally, is_fiscalized_externally, order_id)
+values ('CASH', 2000, 1 , false, false, 2);
 
-insert into payments (payment_type_kind, 'sum', payment_type_id, is_processed_externally, is_fiscalized_externally,
-                      order_id)
-values ('CASH', 4500, 1, true, true, 1);
+insert into payments (payment_type_kind, "sum", payment_type_id, is_processed_externally, is_fiscalized_externally, order_id)
+values ('CASH', 4500, 1 , false, false, 1);
 
-insert into payments (payment_type_kind, 'sum', payment_type_id, is_processed_externally, is_fiscalized_externally,
-                      order_id)
-values ('CASH', 8000, 2, true, true, 3);
+insert into payments (payment_type_kind, "sum", payment_type_id, is_processed_externally, is_fiscalized_externally, order_id)
+values ('CASH', 8000, 2 , false, false, 3);
 
-insert into payments (payment_type_kind, 'sum', payment_type_id, is_processed_externally, is_fiscalized_externally,
-                      order_id)
-values ('CASH', 7000, 2, true, true, 4);
+insert into payments (payment_type_kind, "sum", payment_type_id, is_processed_externally, is_fiscalized_externally, order_id)
+values ('CASH', 7000, 2 , false, false, 4);
 
-insert into payments (payment_type_kind, 'sum', payment_type_id, is_processed_externally, is_fiscalized_externally,
-                      order_id)
-values ('CASH', 6700, 3, true, true, 1);
+insert into payments (payment_type_kind, "sum", payment_type_id, is_processed_externally, is_fiscalized_externally, order_id)
+values ('CASH', 6700, 3 , false, false, 1);
 
 
-insert into orders (external_number, table_id, phone, guest_count, guests, tab_name, source_key, order_type_id,
-                    organization_id)
-values (11, 1, ' + 77007770077 ', 5, 5, null, 'source key #1', 'order type id #1', 1);
+insert into orders (external_number, phone, guest_count, guests, tab_name, is_closed, source_key, order_type_id, organization_id)
+values (11, '+77007770077', 5, 5, null, false , 'source key #1', 'order type id #1', 1);
 
-insert into orders (external_number, table_id, phone, guest_count, guests, tab_name, source_key, order_type_id,
-                    organization_id)
-values (22, 2, ' + 77003045085 ', 7, 7, null, 'source key #2', 'order type id #2', 1);
+insert into orders (external_number, phone, guest_count, guests, tab_name, is_closed, source_key, order_type_id, organization_id)
+values (22, '+77003045085', 7, 7, null, false , 'source key #2', 'order type id #2', 1);
 
-insert into orders (external_number, table_id, phone, guest_count, guests, tab_name, source_key, order_type_id,
-                    organization_id)
-values (33, 3, ' + 77007805391 ', 12, 12, null, 'source key #3', 'order type id #3', 1);
+insert into orders (external_number, phone, guest_count, guests, tab_name, is_closed, source_key, order_type_id, organization_id)
+values (33, '+77007805391', 12, 12, null, false , 'source key #3', 'order type id #3', 1);
 
-insert into orders (external_number, table_id, phone, guest_count, guests, tab_name, source_key, order_type_id,
-                    organization_id)
-values (44, 5, ' + 77004653087 ', 3, 3, null, 'source key #4', 'order type id #4', 2);
+insert into orders (external_number, phone, guest_count, guests, tab_name, is_closed, source_key, order_type_id, organization_id)
+values (44, '+77004653087', 3, 3, null, false , 'source key #4', 'order type id #4', 2);
 
-insert into orders (external_number, table_id, phone, guest_count, guests, tab_name, source_key, order_type_id,
-                    organization_id)
-values (55, 4, ' + 77001143054 ', 23, 23, null, 'source key #5', 'order type id #5', 2);
+insert into orders (external_number, phone, guest_count, guests, tab_name, is_closed, source_key, order_type_id, organization_id)
+values (55, '+77001143054', 23, 23, null, false , 'source key #5', 'order type id #5', 2);
 
-insert into orders (external_number, table_id, phone, guest_count, guests, tab_name, source_key, order_type_id,
-                    organization_id)
-values (66, 6, ' + 77002266817 ', 11, 11, null, 'source key #6', 'order type id #6', 1);
+insert into orders (external_number, phone, guest_count, guests, tab_name, is_closed, source_key, order_type_id, organization_id)
+values (66, '+77002266817', 11, 11, null, false , 'source key #6', 'order type id #6', 1);
 
-insert into orders (external_number, table_id, phone, guest_count, guests, tab_name, source_key, order_type_id,
-                    organization_id)
-values (77, 7, ' + 77005829015 ', 54, 54, null, 'source key #7', 'order type id #7', 3);
+insert into orders (external_number, phone, guest_count, guests, tab_name, is_closed, source_key, order_type_id, organization_id)
+values (77, '+77005829015', 54, 54, null, false , 'source key #7', 'order type id #7', 3);
 
-insert into orders (external_number, table_id, phone, guest_count, guests, tab_name, source_key, order_type_id,
-                    organization_id)
-values (88, 12, ' + 77009278695 ', 35, 35, null, 'source key #8', 'order type id #8', 3);
+insert into orders (external_number, phone, guest_count, guests, tab_name, is_closed, source_key, order_type_id, organization_id)
+values (88,  '+77009278695', 35, 35, null, false , 'source key #8', 'order type id #8', 3);
+
+
+insert into tables (id)
+values (1);
+
+insert into tables (id)
+values (2);
+
+insert into tables (id)
+values (3);
+
+insert into tables (id)
+values (4);
+
+insert into tables (id)
+values (5);
+
+insert into tables (id)
+values (6);
+
+insert into tables (id)
+values (7);
+
+insert into tables (id)
+values (8);
+
+insert into tables (id)
+values (9);
+
+insert into tables (id)
+values (10);
+
+
+insert into orders_tables (order_id, table_id)
+values (1, 1);
+
+insert into orders_tables (order_id, table_id)
+values (1, 2);
+
+insert into orders_tables (order_id, table_id)
+values (1, 3);
+
+insert into orders_tables (order_id, table_id)
+values (2, 1);
+
+insert into orders_tables (order_id, table_id)
+values (2, 2);
+
+insert into orders_tables (order_id, table_id)
+values (2, 3);
+
+insert into orders_tables (order_id, table_id)
+values (3, 1);
+
+insert into orders_tables (order_id, table_id)
+values (3, 2);
+
+insert into orders_tables (order_id, table_id)
+values (3, 3);
+
+insert into orders_tables (order_id, table_id)
+values (1, 4);
+
+insert into orders_tables (order_id, table_id)
+values (4, 1);
+
+insert into orders_tables (order_id, table_id)
+values (5, 1);
+
+insert into orders_tables (order_id, table_id)
+values (6, 1);

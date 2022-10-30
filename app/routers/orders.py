@@ -2,7 +2,7 @@ import logging
 from enum import Enum
 from typing import List
 
-from fastapi import Depends, HTTPException, APIRouter
+from fastapi import Depends, HTTPException, APIRouter, Request, Header, BackgroundTasks
 from sqlalchemy.orm import Session
 from datetime import date
 from pydantic import BaseModel, Field
@@ -576,6 +576,28 @@ async def add_customer(order: AddCustomerToOrder,
     db.commit()
 
     return successful_response(201)
+
+
+@router.post("/webhook")
+async def webhook(order: AddCustomerToOrder,
+                  user: dict = Depends(get_current_user),
+                  db: Session = Depends(get_db),
+                  Content_type: str | None = Header(default="application/json")):
+    headers = {"Content-type": "application/json"}
+
+    return successful_response(200)
+
+
+def write_notification(email: str, message=""):
+    with open("log.txt", mode="w") as email_file:
+        content = f"notification for {email}: {message}"
+        email_file.write(content)
+
+
+@router.post("/send-notification/{email}")
+async def send_notification(email: str, background_tasks: BackgroundTasks):
+    background_tasks.add_task(write_notification, email, message="some notification")
+    return {"message": "Notification sent in the background"}
 
 
 def successful_response(status_code: int):
