@@ -236,6 +236,7 @@ class Orders(Base):
     guest_count = Column(Integer, nullable=True)
     guests = Column(Integer, nullable=True)
     tab_name = Column(Integer, nullable=True)
+    is_closed = Column(Boolean, default=False)
     source_key = Column(String, nullable=True)
     order_type_id = Column(String, nullable=True)
 

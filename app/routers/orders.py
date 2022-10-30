@@ -214,6 +214,41 @@ class AddItemsToOrder(BaseModel):
     )
 
 
+class ChequeAdditionalInfo(BaseModel):
+    needReceipt: bool = Field(
+        title=" ",
+        description="Whether paper cheque should be printed."
+    )
+    email: int | None = Field(
+        title=" ",
+        description="Email to send cheque information or null if the cheque shouldn't be sent by email."
+    )
+    settlement_place: str | None = Field(
+        title=" ",
+        description="Settlement place."
+    )
+    phone: str | None = Field(
+        title=" ",
+        description="Phone to send cheque information (by sms) or null if the cheque shouldn't be sent by sms."
+    )
+
+
+class CloseOrder(BaseModel):
+    cheque_additional_info: ChequeAdditionalInfo | None = Field(
+        title=" ",
+        description="Cheque additional information according to russian federal law #54."
+    )
+    organization_id: int = Field(
+        title=" ",
+        description="Organization ID.\n\n"
+                    "Can be obtained by /api/1/organizations operation."
+    )
+    order_id: int = Field(
+        title=" ",
+        description="Order ID."
+    )
+
+
 def get_db():
     db = SessionLocal()
     try:
@@ -373,6 +408,41 @@ async def add_items_to_order(order: AddItemsToOrder,
 
         db.add(items_model)
         db.commit()
+
+    return successful_response(201)
+
+
+@router.post("/close/",
+             summary="Close order.",
+             description="Allowed from version 7.4.6.\n\n"
+                         "This method is a command. Use api/1/commands/status method to get the progress status.")
+async def close_order(order: CloseOrder,
+                      user: dict = Depends(get_current_user),
+                      db: Session = Depends(get_db)):
+    if user is None:
+        raise get_user_exception()
+
+    list_ids = db.query(models.Organizations.id) \
+        .filter(models.Organizations.owner_id == user.get("id")) \
+        .filter(models.Organizations.id.in_([order.organization_id])) \
+        .all()
+    organization_ids = []
+    get_ids_from_list(list_ids, organization_ids)
+
+    if order.organization_id not in organization_ids:
+        raise HTTPException(status_code=404, detail="Organization not found")
+
+    order_model = db.query(models.Orders) \
+        .filter(models.Orders.id == order.order_id) \
+        .filter(models.Orders.organization_id == order.organization_id) \
+        .first()
+
+    if order_model is None:
+        return http_exception()
+
+    order_model.is_closed = True
+    db.add(order_model)
+    db.commit()
 
     return successful_response(201)
 
