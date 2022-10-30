@@ -89,7 +89,7 @@ class Combo(BaseModel):
 
 class Order(BaseModel):
     external_number: str | None = None
-    table_id_field: int | None = None
+    table_id: int | None = None
     customer: Customer | None = Field(
         title=" ",
         description="Guest.\n\n"
@@ -172,7 +172,7 @@ class GetOrdersByTable(BaseModel):
         description="Organization IDs.\n\n"
                     "Can be obtained by /api/1/organizations operation."
     )
-    table_id_fields: list[int] = Field(
+    table_ids: list[int] = Field(
         title=" ",
         description="Table IDs.\n\n"
     )
@@ -245,7 +245,7 @@ async def create_order(order: CreateOrder,
     order_model = models.Orders()
 
     order_model.external_number = order.order.external_number
-    order_model.table_id_field = order.order.table_id_field
+    order_model.table_id = order.order.table_id
     order_model.phone = order.order.phone
     order_model.guest_count = order.order.guest_count
     order_model.guests = order.order.guests
@@ -319,7 +319,7 @@ async def get_orders_by_table(order: GetOrdersByTable,
     orders_ids_by_tables = []
 
     for i in orders_tables_ids_by_tables:
-        if i.table_id in order.table_id_fields:
+        if i.table_id in order.table_ids:
             orders_ids_by_tables.append(i.order_id)
 
     order_model = db.query(models.Orders) \

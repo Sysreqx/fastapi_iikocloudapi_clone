@@ -231,7 +231,7 @@ class Orders(Base):
     external_number = Column(String, nullable=True)
     # SQLite doesn't extend ARRAY. So I use plain int
     # table_ids = Column(ARRAY(String), nullable=True)
-    table_id_field = Column(Integer, nullable=True)
+    # table_id_field = Column(Integer, nullable=True)
     phone = Column(String, nullable=True)
     guest_count = Column(Integer, nullable=True)
     guests = Column(Integer, nullable=True)
